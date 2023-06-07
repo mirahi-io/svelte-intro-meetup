@@ -1,5 +1,21 @@
-<h2>Dues: WIP</h2>
+<script lang="ts">
+	import { createEventDispatcher } from 'svelte'
+	import type { Due } from '../types'
+	import Button from './Button.svelte'
 
-<button>clear all debts</button>
+	export let dues: Due[] = []
 
-<!-- TODO F.a: complete this component so that it shows dues & clears all expenses on button click -->
+	const dispatch = createEventDispatcher<{
+		clear: void
+	}>()
+
+	const clear = () => {
+		dispatch('clear')
+	}
+</script>
+
+<Button on:click={clear}>clear all debts</Button>
+
+{#each dues as due}
+	<article>{due.from} owes ${due.amount} to {due.to}</article>
+{/each}

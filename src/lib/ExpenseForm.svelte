@@ -5,7 +5,9 @@
 	export let form: Expense
 	export let users: User[] = []
 
-	const dispatch = createEventDispatcher()
+	const dispatch = createEventDispatcher<{
+		submit: void
+	}>()
 
 	const submit = (e: SubmitEvent) => {
 		e.preventDefault()
@@ -14,18 +16,38 @@
 </script>
 
 <form on:submit={submit} {...$$restProps}>
-	<!-- TODO H.a: ⬇ add missing field & fix the others so that an expense can be submitted -->
+	<label for="title">
+		Title
+		<input
+			type="text"
+			id="title"
+			name="title"
+			placeholder="Marbles, chocolate, ..."
+			bind:value={form.title}
+			required
+		/>
+	</label>
 
 	<label for="buyer">Who paid?</label>
-	<select id="buyer" required>
+	<select bind:value={form.by} id="buyer" required>
 		<option value="" selected>Select a user…</option>
+		{#each users as user}
+			<option>{user.name}</option>
+		{/each}
 	</select>
 
 	<fieldset>
 		<legend>For whom?</legend>
 		{#each users as user}
 			<label for={user.name}>
-				<input type="checkbox" id={user.name} name="size" required={!form.for.length} />
+				<input
+					type="checkbox"
+					id={user.name}
+					name="size"
+					value={user.name}
+					bind:group={form.for}
+					required={!form.for.length}
+				/>
 				{user.name}
 			</label>
 		{/each}
@@ -33,6 +55,15 @@
 
 	<label for="amount">
 		Amount
-		<input disabled />
+		<input
+			type="number"
+			id="amount"
+			name="amount"
+			placeholder="23.45"
+			min="1"
+			max="999"
+			bind:value={form.amount}
+			required
+		/>
 	</label>
 </form>

@@ -1,13 +1,13 @@
 <script lang="ts">
 	import { createEventDispatcher } from 'svelte'
-	import type { Balance, User } from '../types'
 	import Button from './Button.svelte'
+	import type { Balance, User } from '../types'
 
 	export let balances: Balance[] = []
 
 	const formatBalance = (balance: number) => {
 		if (!balance) return 'is settled up'
-		return (balance > 0 ? 'is owed ' : 'owes ') + Math.abs(balance)
+		return (balance > 0 ? 'is owed $' : 'owes $') + Math.abs(balance)
 	}
 
 	let newUser = ''
@@ -16,12 +16,15 @@
 		add: User
 	}>()
 
-	// TODO D: ⬇ bind new user name to input, ↕ dispatch custom event with user
+	const addUser = () => {
+		dispatch('add', { name: newUser })
+		newUser = ''
+	}
 </script>
 
 <div>
-	<input placeholder="Uncle Scrooge" />
-	<Button>add user</Button>
+	<input placeholder="Uncle Scrooge" bind:value={newUser} />
+	<Button on:click={addUser}>add user</Button>
 </div>
 
 {#each balances as [name, balance]}

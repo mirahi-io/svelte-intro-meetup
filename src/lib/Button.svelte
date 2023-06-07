@@ -1,5 +1,13 @@
-<button class:outline={false} on:click>
+<script lang="ts">
+	export let outline = false
+</script>
+
+<button class:outline on:click {...$$restProps}>
 	<slot />
 </button>
 
-<!-- TODO A.c: ⬇ uppercase text in button -->
+<style>
+	button {
+		text-transform: uppercase;
+	}
+</style>

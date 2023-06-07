@@ -1,11 +1,12 @@
 <script lang="ts">
 	import Balances from './lib/Balances.svelte'
+	import Button from './lib/Button.svelte'
 	import Dues from './lib/Dues.svelte'
 	import Expenses from './lib/Expenses.svelte'
+	import Transition from './lib/Transition.svelte'
 	import { expenses, balances, dues, users } from './lib/stores'
 	import type { Expense, User } from './types'
 
-	const title = 'Bill Split'
 	const views = ['expenses', 'balance', 'dues'] as const
 	type View = (typeof views)[number]
 
@@ -14,45 +15,42 @@
 	const changeView = (view: View) => () => (selectedView = view)
 
 	const addExpense = (e: CustomEvent<Expense>) => {
-		const f = e.detail
-		if (!f.title || !f.amount || !f.for.length || !f.by) {
-			throw new Error('incomplete data!')
-		}
-		// TODO H.b: ⬇ add the received expense to the list
+		expenses.update((list) => [e.detail, ...list])
 	}
 
 	const addUser = (e: CustomEvent<User>) => {
 		users.update((list) => [e.detail, ...list])
 	}
 
-	const clearDebts = () => {
-		// TODO F.b: remove all expenses
+	const clearDebts = (_e: CustomEvent) => {
+		expenses.update((list) => list.map((expense) => ({ ...expense, settled: true })))
 	}
 </script>
 
 <main>
-	<h1>title</h1>
+	<h1>Bill Split</h1>
 
-	<!-- TODO A.a: ⬆ use custom title -->
-	<!-- TODO A.b: ⬇ use Button instead of button, with text in uppercase -->
+	{#each views as view}
+		<Button on:click={changeView(view)} class="secondary" outline={view !== selectedView}
+			>{view}</Button
+		>
+	{/each}
 
-	<button class="secondary">expenses</button>
-	<button class="secondary outline">balance</button>
-	<button class="secondary outline">dues</button>
+	{#if selectedView === 'expenses'}
+		<Transition>
+			<Expenses expenses={$expenses} users={$users} on:add={addExpense} />
+		</Transition>
+	{/if}
 
-	<!-- TODO B: ⬆ those Buttons should all have "secondary" as class, outline prop for views not selected -->
+	{#if selectedView === 'balance'}
+		<Transition>
+			<Balances balances={$balances} on:add={addUser} />
+		</Transition>
+	{/if}
 
-	<!-- TODO C: ⬆ loop through views instead of hardcoding 3 buttons, ⬇ render only selected view -->
-
-	<hr />
-
-	<Expenses expenses={$expenses} users={$users} on:add={addExpense} />
-
-	<hr />
-
-	<Balances balances={$balances} />
-
-	<hr />
-
-	<Dues />
+	{#if selectedView === 'dues'}
+		<Transition>
+			<Dues dues={$dues} on:clear={clearDebts} />
+		</Transition>
+	{/if}
 </main>

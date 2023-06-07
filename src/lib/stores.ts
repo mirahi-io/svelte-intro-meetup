@@ -65,8 +65,7 @@ const defaultExpenses: Expense[] = [
 
 export const users = writable<User[]>(defaultUsers)
 
-export const expenses = writable<Expense[]>([])
-// TODO E: ⬆ have some things in that store
+export const expenses = writable<Expense[]>(defaultExpenses)
 
 export const balances = derived([users, expenses], ([$users, $expenses]): Balance[] => {
 	const ledger: {
@@ -79,18 +78,20 @@ export const balances = derived([users, expenses], ([$users, $expenses]): Balanc
 		{}
 	)
 
-	$expenses.forEach((expense) => {
-		const amount = expense.amount / expense.for.length
+	$expenses
+		.filter((expense) => !expense.settled)
+		.forEach((expense) => {
+			const amount = expense.amount / expense.for.length
 
-		const minusPayer = expense.for.filter((user) => user !== expense.by)
-		const paidMinusOwn = amount * minusPayer.length
+			const minusPayer = expense.for.filter((user) => user !== expense.by)
+			const paidMinusOwn = amount * minusPayer.length
 
-		ledger[expense.by] += paidMinusOwn
+			ledger[expense.by] += paidMinusOwn
 
-		for (let borrower of minusPayer) {
-			ledger[borrower] -= amount
-		}
-	})
+			for (let borrower of minusPayer) {
+				ledger[borrower] -= amount
+			}
+		})
 
 	const roundedVals = Object.entries(ledger).map(([user, amount]) => {
 		return [user, roundCents(amount)] as [string, number]
